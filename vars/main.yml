@@ -1,0 +1,14 @@
+---
+required_packages:
+  - docker
+  - bridge-utils
+  - iptables-services
+
+optional_packages:
+  - sos
+  - bash-completion
+
+epel_packages:
+  - byobu
+  - screen
+...

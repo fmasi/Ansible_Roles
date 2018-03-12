@@ -1,0 +1,69 @@
+---
+# Probably don't need this, was using it on ocp lab that comes with crap in /etc/yum.repos.d
+# If I do keep it, it would be better to make better usage of state to not run it everytime
+- name: Remove all pre-existing yum repos
+  block:
+    - name: Register path of all yum.repos.d files
+      find:
+        paths: /etc/yum.repos.d
+        patterns: "*.repo"
+      register: files_to_delete
+    - name: Delete all yum.repos.d files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      notify: yum-clean-metadata
+      with_items: "{{ files_to_delete.files }}"
+
+
+- name: Subscribe to rhn
+  redhat_subscription:
+    state: present
+    # force_register: true
+    activationkey: "{{ activation_key }}"
+    org_id: "{{ org_id }}"
+    pool: "{{ pool_name }}"
+
+# We need to do this better, or have a conditional statement, otherwise it will run everytime
+- name: Repository management
+  block:
+    - name: Disable all channels
+      command: 'subscription-manager repos --disable="*"'
+    - name: Enable selected RHN channels
+      command: 'subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-server-ose-3.7-rpms" --enable="rhel-7-fast-datapath-rpms"'
+
+# RHEL version currently hardcoded, i like to use ansible fact instead
+- name: Add EPEL repositorie and packages
+  block:
+    - name: Adding EPEL repo to YUM
+      yum_repository:
+        name: epel
+        file: optional_repos
+        description: EPEL YUM repo
+        mirrorlist: https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=$basearch
+    - name: Adding EPEL GPG key
+      rpm_key:
+        key: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7"
+        state: present
+    - name: Installing EPEL packages
+      yum:
+        name: "{{ epel_packages }}"
+        state: latest
+  when: install_EPEL == true
+
+- name: Update system
+  yum:
+    name: '*'
+    state: latest
+  # notify: reboot_system
+
+- name: Install required packages
+  yum:
+    name: "{{ required_packages }}"
+    state: latest
+
+- name: Install optional packages
+  yum:
+    name: "{{ optional_packages }}"
+    state: latest
+...
