@@ -1,0 +1,34 @@
+---
+- name: Install dumb init
+  get_url:
+    dest: /usr/bin/dumb-init
+    url: https://github.com/Yelp/dumb-init/releases/download/v1.2.1/dumb-init_1.2.1_amd64
+    mode: 0775
+    validate_certs: no
+
+# Would be better to just set as dependency the rhel role
+- name: Install epel
+  yum:
+    name: epel-release
+    state: present
+    disable_gpg_check: yes
+
+- name: Create test user
+  user:
+    name: test_user
+    uid: 1000
+    group: root
+    state: present
+    createhome: yes
+    home: "/app"
+
+- name: Install iperf3
+  yum:
+    name: iperf3
+    state: latest
+
+# - name: Copy source into container
+#   synchronize:
+#     src: "/src/"
+#     dest: "/app"
+#   remote_user: flask
