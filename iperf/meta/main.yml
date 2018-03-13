@@ -1,4 +1,0 @@
----
-  dependencies:
-    - {role: rhel, install_EPEL: True}
-...
