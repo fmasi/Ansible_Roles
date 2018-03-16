@@ -1,0 +1,11 @@
+---
+- name: yum-clean-metadata
+  command: yum clean metadata
+  args:
+    warn: no
+
+- name: reboot_system
+  block:
+    - command: /sbin/reboot
+    - local_action: wait_for host={{ ansible_ssh_host }} state=started delay=30 timeout=300 connect_timeout=15
+...
