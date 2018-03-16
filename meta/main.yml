@@ -44,7 +44,7 @@ galaxy_info:
   #   - 7
   #   - 99.99
   platforms:
-    - name: RHEL
+    - name: EL
       versions:
         - 7
 
